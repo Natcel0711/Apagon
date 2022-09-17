@@ -1,10 +1,29 @@
 import asyncio
 from playwright.async_api import async_playwright
 import json
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+my_url = os.getenv("SUPABASE_URL")
+my_key = os.getenv("SUPABASE_KEY")
+
+async def Select():
+    url: str = my_url
+    key: str = my_key
+    supabase: Client = create_client(url, key)
+    data = supabase.table("Apagon").select("JsonData").execute()
+    # Assert we pulled real data.
+    assert len(data.data) > 0
+    DataJSON = data.data[0]
+    print(DataJSON.get('JsonData'))
+
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         page = await browser.new_page()
+        dicks = []
         await page.set_viewport_size({"width": 3440, "height": 1440})
         await page.goto("https://miluma.lumapr.com/outages/outageMap")
         for e in range(3):
@@ -26,8 +45,14 @@ async def main():
                 "Cantidad":Cantidad,
                 "Sectores":sectores
             }
-            res = json.dumps(dic, sort_keys=True, indent=4)
-            print(res)
+            dicks.append(dic)
+        res = json.dumps(dicks, indent=2)
+        print(res)
+        url: str = my_url
+        key: str = my_key
+        supabase: Client = create_client(url, key)
+        data = supabase.table("Apagon").update({"test":res}).eq('id', 34).execute()
+        assert len(data.data) > 0    
         await browser.close()
 
-asyncio.run(main())
+asyncio.run(Select())
