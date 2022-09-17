@@ -12,10 +12,17 @@ my_key = os.getenv("SUPABASE_KEY")
 
 @app.get("/")
 async def root():
+    try:
+        jsonThing = await getJson()
+    except:
+        return "Error returning data"    
+    return jsonThing
+
+async def getJson():
     url: str = my_url
     key: str = my_key
     supabase: Client = create_client(url, key)
     data = supabase.table("Apagon").select("JsonData").execute()
     # Assert we pulled real data.
     assert len(data.data) > 0
-    return json.loads(data.data[0].get('JsonData'))
+    return json.loads(data.data[0].get('JsonData'))    
